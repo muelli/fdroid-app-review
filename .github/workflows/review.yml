@@ -45,6 +45,9 @@ jobs:
       PKG: ${{ inputs.package }}
       MR_IID: ${{ inputs.mr_iid }}
       DURATION: ${{ inputs.duration }}
+      # Workaround found in this spike: without it the emulator, started by nsntrace as this user,
+      # looked for the AVD under a different $HOME than avdmanager created it in. See FINDINGS.md.
+      ANDROID_AVD_HOME: /home/runner/.android/avd
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +92,15 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install emulator platform-tools > /dev/null
           "$ANDROID_HOME/emulator/emulator" -version | head -1
+
+      - name: Diagnose where the AVD goes and what the emulator sees as HOME
+        run: |
+          env | grep -E '^(HOME|ANDROID[A-Z_]*|XDG_CONFIG_HOME)=' | sort
+          echo "getent: $(getent passwd "$(id -un)" | cut -d: -f6)"
+          echo "--- inside sudo nsntrace -u $(id -un):"
+          sudo --preserve-env=ANDROID_SDK_ROOT,ANDROID_HOME,ANDROID_AVD_HOME \
+            nsntrace -o /tmp/diag.pcap -u "$(id -un)" -- \
+            bash -c 'id; echo "HOME=$HOME USER=$USER"; env | grep -E "^ANDROID" | sort' || true
 
       - name: Download the APK
         run: |
