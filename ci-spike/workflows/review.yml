@@ -45,9 +45,11 @@ jobs:
       PKG: ${{ inputs.package }}
       MR_IID: ${{ inputs.mr_iid }}
       DURATION: ${{ inputs.duration }}
-      # Workaround found in this spike: without it the emulator, started by nsntrace as this user,
-      # looked for the AVD under a different $HOME than avdmanager created it in. See FINDINGS.md.
-      ANDROID_AVD_HOME: /home/runner/.android/avd
+      # Workaround found in this spike (FINDINGS.md, question 2): the runner image sets
+      # XDG_CONFIG_HOME=/home/runner/.config, and avdmanager then creates the AVD under
+      # $XDG_CONFIG_HOME/.android/avd, while the emulator started through sudo/nsntrace looks in
+      # $ANDROID_AVD_HOME or $HOME/.android/avd. Naming the directory avdmanager uses makes them agree.
+      ANDROID_AVD_HOME: /home/runner/.config/.android/avd
     steps:
       - uses: actions/checkout@v4
 

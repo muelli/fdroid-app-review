@@ -198,3 +198,25 @@ def test_crash_lines_only_for_the_app():
         "E AndroidRuntime: FATAL EXCEPTION: main\nE AndroidRuntime: Process: org.example.app, PID: 2\n"
     )
     assert len(ex.crash_lines(log, APP)) == 1
+
+
+def test_compose_button_is_labelled_from_its_children_and_avoided_when_dangerous():
+    xml = dump(
+        '<node class="android.view.View" package="%s" bounds="[0,0][500,100]" enabled="true" '
+        'clickable="true"><node class="android.widget.TextView" package="%s" text="Log out" '
+        'bounds="[10,10][200,90]" enabled="true" clickable="false" /></node>' % (APP, APP),
+        '<node class="android.view.View" package="%s" bounds="[0,200][500,300]" enabled="true" '
+        'clickable="true"><node class="android.widget.TextView" package="%s" text="Settings" '
+        'bounds="[10,210][200,290]" enabled="true" clickable="false" /></node>' % (APP, APP),
+    )
+    s = ex.parse_dump(xml)
+    assert [e.label for e in s.elements] == ["Log out", "Settings"]
+    assert ex.choose(s, APP, set()).label == "Settings"
+
+
+def test_vpn_consent_dialog_is_answered():
+    s = ex.parse_dump(dump(
+        node("android.widget.Button", pkg="com.android.vpndialogs", text="Cancel", clickable="true"),
+        node("android.widget.Button", pkg="com.android.vpndialogs", text="OK", clickable="true"),
+    ))
+    assert ex.choose(s, APP, set()).text == "OK"

@@ -33,6 +33,8 @@ PERMISSION_PACKAGES = {
     "com.android.permissioncontroller",
     "com.google.android.permissioncontroller",
     "com.android.packageinstaller",
+    # Android's own VPN consent dialog, seen when an app asks to start a VPN.
+    "com.android.vpndialogs",
 }
 # Buttons on a runtime permission dialog that let the app carry on.
 PERMISSION_ALLOW = re.compile(r"^(allow|while using the app|only this time|ok)$", re.IGNORECASE)
@@ -61,6 +63,9 @@ class Element:
     clickable: bool
     editable: bool
     password: bool
+    # The text of the element's descendants: a Compose button or a list row usually has its words
+    # in child nodes, not on the clickable node itself.
+    inner: str = ""
 
     @property
     def center(self) -> tuple[int, int]:
@@ -72,6 +77,7 @@ class Element:
         return (
             self.text
             or self.desc
+            or self.inner
             or self.resource_id.rsplit("/", 1)[-1]
             or self.cls.rsplit(".", 1)[-1]
         )
@@ -141,6 +147,13 @@ def parse_dump(xml_text: str) -> Screen:
                 resource_id=a.get("resource-id", ""),
                 text=a.get("text", ""),
                 desc=a.get("content-desc", ""),
+                inner=" ".join(
+                    t
+                    for n in node.iter("node")
+                    if n is not node
+                    for t in (n.get("text", ""), n.get("content-desc", ""))
+                    if t
+                )[:80],
                 bounds=bounds,
                 clickable=clickable,
                 editable=editable,
@@ -184,14 +197,14 @@ def choose(screen: Screen, app_package: str, tried: set[str]) -> Element | None:
     """The next element to try on this screen: untried text fields, then untried taps, in reading order."""
     if screen.packages & PERMISSION_PACKAGES:
         for e in screen.elements:
-            if PERMISSION_ALLOW.match(e.text.strip()) and e.key not in tried:
+            if PERMISSION_ALLOW.match((e.text or e.inner).strip()) and e.key not in tried:
                 return e
     candidates = [
         e
         for e in screen.elements
         if e.package == app_package
         and e.key not in tried
-        and not AVOID_WORDS.search(f"{e.text} {e.desc}")
+        and not AVOID_WORDS.search(f"{e.text} {e.desc} {e.inner}")
     ]
     candidates.sort(key=lambda e: (not e.editable, e.bounds[1], e.bounds[0]))
     return candidates[0] if candidates else None
