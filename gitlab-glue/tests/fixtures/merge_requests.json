@@ -1,0 +1,28 @@
+{
+  "merge_requests": [
+    {
+      "iid": 32058,
+      "title": "Add LANflix",
+      "web_url": "https://gitlab.com/fdroid/fdroiddata/-/merge_requests/32058",
+      "author_username": "example-submitter",
+      "source_branch": "lanflix",
+      "target_branch": "master",
+      "created_at": "2026-08-01T10:00:00Z",
+      "labels": ["Needs Testing", "New App"],
+      "pipeline_status": "success",
+      "package_name": "org.example.lanflix"
+    },
+    {
+      "iid": 25589,
+      "title": "New app: QuickSE",
+      "web_url": "https://gitlab.com/fdroid/fdroiddata/-/merge_requests/25589",
+      "author_username": "another-submitter",
+      "source_branch": "quickse",
+      "target_branch": "master",
+      "created_at": "2026-07-15T09:30:00Z",
+      "labels": ["Needs Testing"],
+      "pipeline_status": "success",
+      "package_name": "se.quick.app"
+    }
+  ]
+}

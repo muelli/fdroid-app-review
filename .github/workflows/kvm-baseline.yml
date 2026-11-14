@@ -1,0 +1,68 @@
+# Baseline: does this runner have KVM, and how long does a stock x86_64 AOSP emulator take to boot
+# with reactivecircus/android-emulator-runner? No app, no capture: the numbers the rest is measured
+# against.
+name: kvm-baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_level:
+        description: Android API level of the system image
+        default: "34"
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      API_LEVEL: ${{ inputs.api_level }}
+    steps:
+      - name: Host facts
+        run: |
+          [[ "$API_LEVEL" =~ ^[0-9]{2}$ ]] || { echo "bad api_level"; exit 1; }
+          echo "nproc: $(nproc)"; free -m; uname -a; head -2 /etc/os-release; df -h /
+          echo "cpu virt flags: $(grep -c -E 'vmx|svm' /proc/cpuinfo)"
+          ls -l /dev/kvm || echo "NO /dev/kvm"
+          echo "ip_forward: $(cat /proc/sys/net/ipv4/ip_forward)"
+          sudo -n true && echo "passwordless sudo: yes"
+          echo "ImageOS=$ImageOS ImageVersion=$ImageVersion ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME" "$ANDROID_HOME/emulator" 2>&1 | head -20
+
+      - name: Let the runner user open /dev/kvm
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+          "$ANDROID_HOME/emulator/emulator" -accel-check || true
+
+      - name: Mark boot start
+        run: echo "BOOT_T0=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Boot the emulator (reactivecircus baseline)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ inputs.api_level }}
+          target: default
+          arch: x86_64
+          force-avd-creation: true
+          disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -no-snapshot -no-boot-anim -noaudio -gpu swiftshader_indirect
+          # Each line of `script` runs in its own shell, so state is passed through a file.
+          script: |
+            echo "boot_done_epoch=$(date +%s)" | tee /tmp/boot.txt
+            adb shell getprop ro.build.version.release
+            adb shell getprop ro.product.cpu.abilist
+            adb shell cat /proc/uptime
+            adb shell "ping -c 2 -W 3 f-droid.org" || true
+
+      - name: Boot time
+        run: |
+          done_epoch="$(sed -n 's/^boot_done_epoch=//p' /tmp/boot.txt)"
+          echo "From the action starting (includes system image download + AVD creation) to boot_completed: $((done_epoch - BOOT_T0)) s"
+          echo "## Boot: $((done_epoch - BOOT_T0)) s from action start to boot_completed" >> "$GITHUB_STEP_SUMMARY"

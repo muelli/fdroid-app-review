@@ -1,0 +1,82 @@
+{
+ "status": "failed",
+ "new_errors": [
+  {
+   "description": "Permission android.permission.INTERNET",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.INTERNET",
+   "severity": "minor"
+  },
+  {
+   "description": "Permission android.permission.CAMERA",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.CAMERA",
+   "severity": "minor"
+  },
+  {
+   "description": "Reproducible build APK: https://gitlab.com/fdroid/fdroiddata/-/jobs/17214189254/artifacts/raw/tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk",
+   "fingerprint": "binaries/com.Obscrum.pchwmonitor_8.binary.apk",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.ACCESS_NETWORK_STATE",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.ACCESS_NETWORK_STATE",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.CHANGE_WIFI_MULTICAST_STATE",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.CHANGE_WIFI_MULTICAST_STATE",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.FOREGROUND_SERVICE",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.FOREGROUND_SERVICE",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.POST_NOTIFICATIONS",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk android.permission.POST_NOTIFICATIONS",
+   "severity": "info"
+  },
+  {
+   "description": "Permission com.Obscrum.pchwmonitor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk com.Obscrum.pchwmonitor.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "severity": "info"
+  },
+  {
+   "description": "Signing Key: CN=Example Author",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk Signing Key",
+   "severity": "info"
+  },
+  {
+   "description": "APK ABI and size: arm64-v8a (2.2M) armeabi-v7a (2.2M) x86 (2.2M) x86_64 (2.2M) , 2.6M",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk ABI and size",
+   "severity": "info"
+  },
+  {
+   "description": "APK R8 Marker: {\"backend\":\"dex\",\"compilation-mode\":\"release\",\"has-checksums\":false,\"min-api\":24,\"pg-map-id\":\"8d87958cd1314fc0e1da2f908573e0d00000ce359122864c791e147aff7e0776\",\"r8-mode\":\"full\",\"version\":\"9.3.16\"}",
+   "fingerprint": "tmp/binaries/com.Obscrum.pchwmonitor_8.binary.apk R8 Marker",
+   "severity": "info"
+  },
+  {
+   "description": "Fastlane/Triple-T in en-US: summary (Real-time PC hardware stats (CPU, GPU, RAM) on your phone over local Wi-Fi.), name (PC HW Monitor), description (<p>PC HW Monitor shows your PC's real-time hardware statistics on your phone ove), phoneScreenshots (4), icon",
+   "fingerprint": "com.Obscrum.pchwmonitor fastlane en-US found",
+   "severity": "info"
+  },
+  {
+   "description": "Fastlane/Triple-T in tr: summary (Bilgisayar\u0131n\u0131n CPU, GPU ve RAM verilerini yerel Wi-Fi'da telefonda g\u00f6ster.), name (PC HW Monitor), description (<p>PC HW Monitor, bilgisayar\u0131n\u0131n anl\u0131k donan\u0131m istatistiklerini yerel Wi-Fi \u00fczer), phoneScreenshots (4)",
+   "fingerprint": "com.Obscrum.pchwmonitor fastlane tr found",
+   "severity": "info"
+  }
+ ],
+ "resolved_errors": [],
+ "existing_errors": [],
+ "summary": {
+  "total": 14,
+  "resolved": 0,
+  "errored": 14
+ }
+}

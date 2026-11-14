@@ -1,0 +1,77 @@
+{
+ "status": "failed",
+ "new_errors": [
+  {
+   "description": "Signed APK: https://gitlab.com/fdroid/fdroiddata/-/jobs/17462492034/artifacts/raw/tmp/signed/com.covertwogames.dozeoff.foss_14.signed.apk",
+   "fingerprint": "signed/com.covertwogames.dozeoff.foss_14.signed.apk",
+   "severity": "info"
+  },
+  {
+   "description": "Fastlane/Triple-T in en-US: summary (Fix delayed notifications. Stop Android Doze from holding back your alerts.), name (DozeOff), description (Are your notifications arriving late, or not at all? You're not alone.\n\nAndroid )",
+   "fingerprint": "com.covertwogames.dozeoff.foss fastlane en-US found",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.RECEIVE_BOOT_COMPLETED",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.RECEIVE_BOOT_COMPLETED",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.WAKE_LOCK",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.WAKE_LOCK",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.FOREGROUND_SERVICE",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.FOREGROUND_SERVICE",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.POST_NOTIFICATIONS",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.POST_NOTIFICATIONS",
+   "severity": "info"
+  },
+  {
+   "description": "Permission android.permission.SCHEDULE_EXACT_ALARM",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk android.permission.SCHEDULE_EXACT_ALARM",
+   "severity": "info"
+  },
+  {
+   "description": "Permission com.covertwogames.dozeoff.foss.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk com.covertwogames.dozeoff.foss.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "severity": "info"
+  },
+  {
+   "description": "Signing Key: CN=Example Author, OU=y, O=y, L=y, ST=y, C=y",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk Signing Key",
+   "severity": "info"
+  },
+  {
+   "description": "APK ABI and size: No native lib, 3.8M",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk ABI and size",
+   "severity": "info"
+  },
+  {
+   "description": "APK R8 Marker: {\"backend\":\"dex\",\"compilation-mode\":\"release\",\"has-checksums\":false,\"min-api\":24,\"pg-map-id\":\"dc7edcd56ac24ca585c28a8d81d308ea00093bc658ffa7311b9326de19fdf005\",\"r8-mode\":\"full\",\"version\":\"8.13.19\"}",
+   "fingerprint": "tmp/binaries/com.covertwogames.dozeoff.foss_14.binary.apk R8 Marker",
+   "severity": "info"
+  }
+ ],
+ "resolved_errors": [],
+ "existing_errors": [],
+ "summary": {
+  "total": 13,
+  "resolved": 0,
+  "errored": 13
+ }
+}

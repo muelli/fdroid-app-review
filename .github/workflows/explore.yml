@@ -1,0 +1,79 @@
+# The uiautomator-dump explorer (ci-spike/explorer/explore.py) against `adb shell monkey`, one job per
+# app, each on its own emulator (reactivecircus/android-emulator-runner, AOSP x86_64). No network
+# capture here: that is review.yml. Screenshots of every step are uploaded as an artifact.
+name: explore
+
+on:
+  workflow_dispatch:
+    inputs:
+      apps:
+        description: 'JSON list: [{"name":"x","url":"https://...apk","package":"a.b"}]'
+        required: true
+      steps:
+        description: explorer step limit
+        default: "40"
+      monkey_events:
+        description: monkey events (0 = skip)
+        default: "400"
+
+permissions:
+  contents: read
+
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(inputs.apps) }}
+    env:
+      APK_URL: ${{ matrix.app.url }}
+      PKG: ${{ matrix.app.package }}
+      NAME: ${{ matrix.app.name }}
+      STEPS: ${{ inputs.steps }}
+      EVENTS: ${{ inputs.monkey_events }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the inputs and download the APK
+        run: |
+          [[ "$APK_URL" =~ ^https://[A-Za-z0-9._~:/?#@!\$\&\'()*+,\;=%-]+$ ]] || { echo "url must be https"; exit 1; }
+          [[ "$PKG" =~ ^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$ ]] || { echo "bad package"; exit 1; }
+          [[ "$NAME" =~ ^[A-Za-z0-9._-]{1,40}$ ]] || { echo "bad name"; exit 1; }
+          [[ "$STEPS" =~ ^[0-9]{1,3}$ && "$EVENTS" =~ ^[0-9]{1,4}$ ]] || { echo "bad limits"; exit 1; }
+          mkdir -p work
+          curl -fsSL --retry 3 --max-filesize 200000000 -o work/app.apk "$APK_URL"
+          sha256sum work/app.apk
+          unzip -Z1 work/app.apk | sed -n 's#^lib/\([^/]*\)/.*#\1#p' | sort -u | tr '\n' ' '; echo
+
+      - name: Let the runner user open /dev/kvm
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Explore
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: default
+          arch: x86_64
+          force-avd-creation: true
+          disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -no-snapshot -no-boot-anim -noaudio -gpu swiftshader_indirect
+          script: bash ci-spike/explorer/run_one.sh work/app.apk "$PKG" "out/$NAME" "$STEPS" "$EVENTS"
+
+      - name: Summary
+        if: always()
+        run: |
+          cat out/"$NAME"/explore.txt out/"$NAME"/monkey.txt 2>/dev/null | tee -a "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: explore-${{ matrix.app.name }}
+          path: out/
+          retention-days: 3
