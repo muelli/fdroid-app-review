@@ -90,7 +90,9 @@ def test_blockers():
         )
     )
     assert "camera-or-qr" in ex.blockers(qr, APP)
+    assert "surface-view" in ex.blockers(qr, APP)
     canvas = ex.parse_dump(dump(node("android.view.SurfaceView")))
+    assert "camera-or-qr" not in ex.blockers(canvas, APP)
     assert "no-accessible-elements" in ex.blockers(canvas, APP)
 
 
@@ -183,7 +185,7 @@ def test_explore_visits_both_screens_and_stops_when_nothing_is_left(tmp_path):
     dev = FakeDevice()
     s = ex.explore(ex.Adb("adb", runner=dev), APP, tmp_path, max_steps=20, pause=lambda _s: None)
     assert len(s.screens) == 2
-    assert s.activities == [f"{APP}/.Main", f"{APP}/{APP}.Main"]
+    assert s.activities == [f"{APP}/{APP}.Main"]
     assert s.stopped_because.startswith("nothing new")
     steps = [json.loads(l) for l in (tmp_path / "steps.jsonl").read_text().splitlines()]
     assert [st["action"] for st in steps[:3]] == ["tap", "tap", "back"]

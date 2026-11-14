@@ -162,10 +162,11 @@ def blockers(screen: Screen, app_package: str) -> list[str]:
         any(e.editable for e in screen.elements) and LOGIN_WORDS.search(words)
     ):
         found.append("login")
-    if CAMERA_WORDS.search(words) or any(
-        c.endswith(("SurfaceView", "TextureView")) for c in screen.classes
-    ):
+    if CAMERA_WORDS.search(words):
         found.append("camera-or-qr")
+    if any(c.endswith(("SurfaceView", "TextureView", "GLSurfaceView")) for c in screen.classes):
+        # A camera preview, a map, a game engine: drawn pixels, not accessibility nodes.
+        found.append("surface-view")
     if any(c.endswith("WebView") for c in screen.classes):
         found.append("webview")
     app_elements = [e for e in screen.elements if e.package == app_package]
@@ -283,8 +284,14 @@ class Summary:
     stopped_because: str = ""
 
 
+def full_activity(component: str) -> str:
+    """org.x/.Main and org.x/org.x.Main are the same activity: always the second form."""
+    pkg, _, act = component.partition("/")
+    return f"{pkg}/{pkg}{act}" if act.startswith(".") else component
+
+
 def displayed_activities(logcat: str, package: str) -> set[str]:
-    return {f"{p}/{a}" for p, a in DISPLAYED.findall(logcat) if p == package}
+    return {full_activity(f"{p}/{a}") for p, a in DISPLAYED.findall(logcat) if p == package}
 
 
 def crash_lines(logcat: str, package: str) -> list[str]:
@@ -379,7 +386,7 @@ def explore(
     logcat = adb.shell("logcat -d", timeout=60)
     summary.activities = sorted(
         displayed_activities(logcat, package)
-        | {f for f in focus_seen if f.startswith(package + "/")}
+        | {full_activity(f) for f in focus_seen if f.startswith(package + "/")}
     )
     summary.crashes = crash_lines(logcat, package)
     summary.screens = screens

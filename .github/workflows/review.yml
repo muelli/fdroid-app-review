@@ -97,10 +97,13 @@ jobs:
         run: |
           env | grep -E '^(HOME|ANDROID[A-Z_]*|XDG_CONFIG_HOME)=' | sort
           echo "getent: $(getent passwd "$(id -un)" | cut -d: -f6)"
-          echo "--- inside sudo nsntrace -u $(id -un):"
-          sudo --preserve-env=ANDROID_SDK_ROOT,ANDROID_HOME,ANDROID_AVD_HOME \
-            nsntrace -o /tmp/diag.pcap -u "$(id -un)" -- \
-            bash -c 'id; echo "HOME=$HOME USER=$USER"; env | grep -E "^ANDROID" | sort' || true
+          echo "--- inside sudo nsntrace -u $(id -un) (retried: nsntrace loses its interface race often):"
+          for i in 1 2 3 4 5; do
+            out="$(sudo --preserve-env=ANDROID_SDK_ROOT,ANDROID_HOME,ANDROID_AVD_HOME \
+              nsntrace -o /tmp/diag.pcap -u "$(id -un)" -- \
+              bash -c 'echo DIAG; id; echo "HOME=$HOME USER=$USER XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-}"; env | grep -E "^ANDROID" | sort' 2>&1)" || true
+            if grep -q DIAG <<<"$out"; then grep -A20 DIAG <<<"$out"; echo "(attempt $i)"; break; fi
+          done
 
       - name: Download the APK
         run: |
@@ -120,6 +123,12 @@ jobs:
           echo "avd_fallback.sh exit status ${status} after $(( $(date +%s) - t0 )) s"
           echo "## avd_fallback.sh: exit ${status}, $(( $(date +%s) - t0 )) s" >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
+
+      - name: Where did the AVD go (on failure)
+        if: failure()
+        run: |
+          sudo find / -xdev -name 'fdroid-review-*.ini' -not -path '/proc/*' 2>/dev/null || true
+          avdmanager list avd 2>&1 | head -20 || true
 
       - name: Network evidence check
         if: always()
