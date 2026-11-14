@@ -31,17 +31,18 @@ gh auth status >/dev/null 2>&1 || { echo "error: gh is not logged in (gh auth lo
 
 t0=$(date +%s)
 since="$(date -u -d '-10 seconds' +%Y-%m-%dT%H:%M:%SZ)"
-fields=(-f "apk_url=$APK_URL" -f "package=$PACKAGE" -f "duration=$DURATION")
+tag="gh-review-$(date +%s)-$$-${RANDOM}"
+fields=(-f "apk_url=$APK_URL" -f "package=$PACKAGE" -f "duration=$DURATION" -f "tag=$tag")
 [[ -n "$MR_IID" ]] && fields+=(-f "mr_iid=$MR_IID")
 gh workflow run "$WORKFLOW" -R "$REPO" "${fields[@]}"
 
-# `gh workflow run` does not return the run it started: find the newest dispatch run of this
-# workflow, by this user, created after the dispatch.
-me="$(gh api user --jq .login)"
+# `gh workflow run` does not return the run it started: find it by the unique tag in its run name
+# (the workflow's run-name), so two wrappers running at once never pick each other's run.
 run_id=""
 for _ in $(seq 1 30); do
-    run_id="$(gh run list -R "$REPO" -w "$WORKFLOW" -e workflow_dispatch -u "$me" -L 5 \
-        --json databaseId,createdAt --jq "map(select(.createdAt >= \"$since\")) | .[0].databaseId // empty")"
+    run_id="$(gh run list -R "$REPO" -w "$WORKFLOW" -e workflow_dispatch -L 20 \
+        --json databaseId,createdAt,displayTitle \
+        --jq "map(select(.createdAt >= \"$since\" and (.displayTitle | endswith(\" $tag\")))) | .[0].databaseId // empty")"
     [[ -n "$run_id" ]] && break
     sleep 2
 done

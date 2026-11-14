@@ -6,6 +6,8 @@
 # No secrets are used. No third-party uploads: none of quick_review's --upload-* or --virustotal
 # options are passed. In a public repository the job log and the artifact are world-readable.
 name: review
+# The tag lets a caller find the run it started (`gh workflow run` does not say which run that is).
+run-name: review ${{ inputs.package }} ${{ inputs.tag }}
 
 on:
   workflow_dispatch:
@@ -24,6 +26,10 @@ on:
         description: seconds to record (quick_review clamps to 180)
         required: false
         default: "60"
+      tag:
+        description: free-form tag shown in the run name, so a caller can find its run
+        required: false
+        default: ""
 
 permissions:
   contents: read
