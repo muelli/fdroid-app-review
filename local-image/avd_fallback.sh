@@ -440,6 +440,34 @@ if ! avdmanager list avd | grep -q "Name: ${AVD_NAME}\$"; then
         --device "pixel_6"
 fi
 
+# Point the emulator at the directory avdmanager actually put the AVD in. Confirmed on a GitHub
+# runner (ci-spike/FINDINGS.md): the image sets XDG_CONFIG_HOME, avdmanager then created the AVD
+# under $XDG_CONFIG_HOME/.android/avd, and the emulator launched through sudo and nsntrace looked
+# in $HOME/.android/avd instead and stopped with "Unknown AVD name". avdmanager also ignored an
+# ANDROID_AVD_HOME that named another directory. Why the emulator misses the XDG location only
+# through sudo is not established; this sidesteps the question. ANDROID_AVD_HOME is passed
+# through both sudo layers below.
+_avd_dir() {
+    local path dir
+    path="$(avdmanager list avd 2>/dev/null | awk -v name="$AVD_NAME" '
+        $1 == "Name:" { found = ($2 == name) }
+        found && $1 == "Path:" { sub(/^[ \t]*Path:[ \t]*/, ""); print; exit }')"
+    [[ -n "$path" ]] || return 1
+    dir="$(dirname "$path")"
+    # The AVD's .ini sits next to its .avd directory; without it the emulator cannot use dir.
+    [[ -f "$dir/${AVD_NAME}.ini" ]] || return 1
+    printf '%s\n' "$dir"
+}
+if AVD_DIR="$(_avd_dir)"; then
+    if [[ "${ANDROID_AVD_HOME:-}" != "$AVD_DIR" ]]; then
+        echo "Using the AVD directory avdmanager reports: ${AVD_DIR}"
+    fi
+    export ANDROID_AVD_HOME="$AVD_DIR"
+else
+    echo "warning: could not find ${AVD_NAME}'s directory in 'avdmanager list avd';" \
+        "leaving ANDROID_AVD_HOME as it is" >&2
+fi
+
 EMULATOR_EXTRA_ARGS=()
 if [[ "$GOLDEN" == 1 ]]; then
     EMULATOR_EXTRA_ARGS+=(-read-only)

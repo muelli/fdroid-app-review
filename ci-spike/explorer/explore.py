@@ -352,7 +352,9 @@ def explore(
         sig = screen.signature
         if sig not in screens:
             screens.append(sig)
-        found = blockers(screen, package)
+        # Only screens of the app or a dialog it raised: the launcher's Camera icon is not a blocker.
+        on_app = package in screen.packages or bool(screen.packages & PERMISSION_PACKAGES)
+        found = blockers(screen, package) if on_app else []
         for b in found:
             summary.blockers[b] = summary.blockers.get(b, 0) + 1
 

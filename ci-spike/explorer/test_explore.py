@@ -215,8 +215,17 @@ def test_compose_button_is_labelled_from_its_children_and_avoided_when_dangerous
 
 
 def test_vpn_consent_dialog_is_answered():
-    s = ex.parse_dump(dump(
-        node("android.widget.Button", pkg="com.android.vpndialogs", text="Cancel", clickable="true"),
-        node("android.widget.Button", pkg="com.android.vpndialogs", text="OK", clickable="true"),
-    ))
+    s = ex.parse_dump(
+        dump(
+            node(
+                "android.widget.Button",
+                pkg="com.android.vpndialogs",
+                text="Cancel",
+                clickable="true",
+            ),
+            node(
+                "android.widget.Button", pkg="com.android.vpndialogs", text="OK", clickable="true"
+            ),
+        )
+    )
     assert ex.choose(s, APP, set()).text == "OK"

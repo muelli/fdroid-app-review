@@ -45,11 +45,6 @@ jobs:
       PKG: ${{ inputs.package }}
       MR_IID: ${{ inputs.mr_iid }}
       DURATION: ${{ inputs.duration }}
-      # Workaround found in this spike (FINDINGS.md, question 2): the runner image sets
-      # XDG_CONFIG_HOME=/home/runner/.config, and avdmanager then creates the AVD under
-      # $XDG_CONFIG_HOME/.android/avd, while the emulator started through sudo/nsntrace looks in
-      # $ANDROID_AVD_HOME or $HOME/.android/avd. Naming the directory avdmanager uses makes them agree.
-      ANDROID_AVD_HOME: /home/runner/.config/.android/avd
     steps:
       - uses: actions/checkout@v4
 
@@ -94,18 +89,6 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install emulator platform-tools > /dev/null
           "$ANDROID_HOME/emulator/emulator" -version | head -1
-
-      - name: Diagnose where the AVD goes and what the emulator sees as HOME
-        run: |
-          env | grep -E '^(HOME|ANDROID[A-Z_]*|XDG_CONFIG_HOME)=' | sort
-          echo "getent: $(getent passwd "$(id -un)" | cut -d: -f6)"
-          echo "--- inside sudo nsntrace -u $(id -un) (retried: nsntrace loses its interface race often):"
-          for i in 1 2 3 4 5; do
-            out="$(sudo --preserve-env=ANDROID_SDK_ROOT,ANDROID_HOME,ANDROID_AVD_HOME \
-              nsntrace -o /tmp/diag.pcap -u "$(id -un)" -- \
-              bash -c 'echo DIAG; id; echo "HOME=$HOME USER=$USER XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-}"; env | grep -E "^ANDROID" | sort' 2>&1)" || true
-            if grep -q DIAG <<<"$out"; then grep -A20 DIAG <<<"$out"; echo "(attempt $i)"; break; fi
-          done
 
       - name: Download the APK
         run: |
